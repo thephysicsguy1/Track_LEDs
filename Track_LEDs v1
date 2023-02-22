@@ -1,0 +1,64 @@
+#include <FastLED.h>
+
+// Define the number of LEDs and the pin they are connected to
+#define NUM_LEDS 200
+#define DATA_PIN 6
+
+// Define the pins for the two buttons
+#define BUTTON_A 2
+#define BUTTON_B 3
+
+// Define the colors for the LEDs
+CRGB leds[NUM_LEDS];
+CRGB yellow = CRGB(255, 255, 0);
+CRGB green = CRGB(0, 255, 0);
+
+// Define the timing for the LED chase and the 10-second delay
+#define CHASE_DELAY 25
+#define DELAY_TIME 10000
+
+void setup() {
+  // Initialize the LED strip
+  FastLED.addLeds<WS2811, DATA_PIN, GRB>(leds, NUM_LEDS);
+
+  // Initialize the button pins as inputs
+  pinMode(BUTTON_A, INPUT);
+  pinMode(BUTTON_B, INPUT);
+}
+
+void loop() {
+  // Check if button A is pressed
+  if (digitalRead(BUTTON_A) == HIGH) {
+    // Set all LEDs to yellow and hold until button B is pressed
+    for (int i = 0; i < NUM_LEDS; i++) {
+      leds[i] = yellow;
+    }
+    FastLED.show();
+    while (digitalRead(BUTTON_B) == LOW) {
+      delay(50);
+    }
+  } else if (digitalRead(BUTTON_B) == HIGH) {
+    // Chase the LEDs from pixel 1 to pixel 200, then all light green for 10 seconds
+    for (int i = 0; i < NUM_LEDS; i++) {
+      leds[i] = CRGB::Black;
+    }
+    FastLED.show();
+    for (int i = 0; i < NUM_LEDS; i++) {
+      leds[i] = green;
+      FastLED.show();
+      delay(CHASE_DELAY);
+    }
+    for (int i = 0; i < NUM_LEDS; i++) {
+      leds[i] = green;
+    }
+    FastLED.show();
+    delay(DELAY_TIME);
+  } else {
+    // Loop random colors
+    for (int i = 0; i < NUM_LEDS; i++) {
+      leds[i] = CHSV(random(255), 255, 255);
+    }
+    FastLED.show();
+    delay(50);
+  }
+}
