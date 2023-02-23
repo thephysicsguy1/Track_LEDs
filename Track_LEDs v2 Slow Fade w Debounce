@@ -1,0 +1,93 @@
+#include <FastLED.h>
+
+// Define the pin for the LED strip
+#define LED_PIN 6
+
+// Define the number of LEDs in the strip
+#define NUM_LEDS 200
+
+// Define the pin numbers for the buttons
+#define BUTTON_A 2
+#define BUTTON_B 3
+
+// Define the debounce delay in milliseconds
+#define DEBOUNCE_DELAY 50
+
+// Define the fade duration in milliseconds
+#define FADE_DURATION 10
+
+// Create an array of CRGB objects for the LED strip
+CRGB leds[NUM_LEDS];
+
+// Define the last button state variables
+int lastButtonAState = LOW;
+int lastButtonBState = LOW;
+
+// Define the last debounce time variables
+unsigned long lastDebounceTimeA = 0;
+unsigned long lastDebounceTimeB = 0;
+
+// Define the updated button state variables
+int updatedButtonAState;
+int updatedButtonBState;
+
+void setup() {
+  // Initialize the LED strip
+  FastLED.addLeds<WS2811, LED_PIN, GRB>(leds, NUM_LEDS);
+  // Set the pin modes for the buttons
+  pinMode(BUTTON_A, INPUT_PULLUP);
+  pinMode(BUTTON_B, INPUT_PULLUP);
+}
+
+void randomColorLoop() {
+  // Loop through each LED and set a random color
+  for (int i = 0; i < NUM_LEDS; i++) {
+    leds[i] = CHSV(random(256), 255, 255);
+    FastLED.show();
+    // Fade the LED to the new color over time
+    leds[i].fadeToBlackBy(FADE_DURATION);
+  }
+}
+
+void loop() {
+  // Check if button A has been pressed
+  updatedButtonAState = digitalRead(BUTTON_A);
+  if (updatedButtonAState != lastButtonAState && millis() - lastDebounceTimeA > DEBOUNCE_DELAY) {
+    if (updatedButtonAState == HIGH) {
+      // Button A has been pressed, set all LEDs to yellow
+      fill_solid(leds, NUM_LEDS, CRGB::Yellow);
+      FastLED.show();
+      // Record the current time as the last debounce time for button A
+      lastDebounceTimeA = millis();
+    }
+  }
+  // Update the last button state for button A
+  lastButtonAState = updatedButtonAState;
+
+  // Check if button B has been pressed
+  updatedButtonBState = digitalRead(BUTTON_B);
+  if (updatedButtonBState != lastButtonBState && millis() - lastDebounceTimeB > DEBOUNCE_DELAY) {
+    if (updatedButtonBState == HIGH) {
+      // Button B has been pressed, light chase and green all LEDs for 8 seconds
+      for (int i = 0; i < NUM_LEDS; i++) {
+        leds[i] = CRGB::Green;
+        FastLED.show();
+        delay(FADE_DURATION);
+      }
+      for (int i = 0; i < NUM_LEDS; i++) {
+        leds[i] = CRGB::Black;
+      }
+      FastLED.show();
+      delay(8000);
+    }
+    // Record the current time as the last debounce time for button B
+    lastDebounceTimeB = millis();
+  }
+  // Update the last button state for button B
+  lastButtonBState = updatedButtonBState;
+
+  // If neither button has been pressed, run the random color loop
+  if (digitalRead(BUTTON_A) == LOW && digitalRead(BUTTON_B) == LOW) {
+    randomColorLoop();
+  }
+}
