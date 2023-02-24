@@ -16,8 +16,8 @@
 // Define the fade duration in milliseconds
 #define FADE_DURATION 10
 
-// Define the maximum brightness
-#define MAX_BRIGHTNESS 64
+// Define the maximum brightness of 75% (adjust higher or lower to change, out of 255=100%)
+#define MAX_BRIGHTNESS 192
 
 // Create an array of CRGB objects for the LED strip
 CRGB leds[NUM_LEDS];
