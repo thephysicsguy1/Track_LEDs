@@ -1,0 +1,132 @@
+#include <FastLED.h>
+
+// Define the pin for the LED strip
+#define LED_PIN 6
+
+// Define the number of LEDs in the strip
+#define NUM_LEDS 200
+
+// Define the pin numbers for the buttons
+#define BUTTON_A 2
+#define BUTTON_B 3
+
+// Define the debounce delay in milliseconds
+#define DEBOUNCE_DELAY 50
+
+// Define the fade duration in milliseconds
+#define FADE_DURATION 10
+
+// Define the maximum brightness (range from 0 to 255)
+#define MAX_BRIGHTNESS 128
+
+// Create an array of CRGB objects for the LED strip
+CRGB leds[NUM_LEDS];
+
+// Define the last button state variables
+int lastButtonAState = LOW;
+int lastButtonBState = LOW;
+
+// Define the last debounce time variables
+unsigned long lastDebounceTimeA = 0;
+unsigned long lastDebounceTimeB = 0;
+
+// Define the updated button state variables
+int updatedButtonAState;
+int updatedButtonBState;
+
+// Define the current effect index
+int currentEffect = 0;
+
+void setup() {
+  // Initialize the LED strip
+  FastLED.addLeds<WS2811, LED_PIN, GRB>(leds, NUM_LEDS);
+  // Set the pin modes for the buttons
+  pinMode(BUTTON_A, INPUT_PULLUP);
+  pinMode(BUTTON_B, INPUT_PULLUP);
+}
+
+void randomColorLoop() {
+  // Loop through each LED and set a random color
+  for (int i = 0; i < NUM_LEDS; i++) {
+    switch (currentEffect) {
+      case 0:
+        // Set a random color for each LED
+        leds[i] = CHSV(random(256), 255, 255);
+        leds[i].fadeToBlackBy(FADE_DURATION);
+        break;
+      case 1:
+        // Sweep a random color across the LED strip
+        for (int j = 0; j < NUM_LEDS; j++) {
+          leds[j] = CHSV(random(256), 255, MAX_BRIGHTNESS);
+        }
+        FastLED.show();
+        delay(FADE_DURATION);
+        break;
+      case 2:
+        // Display a rainbow twinkling effect
+        fill_rainbow(leds, NUM_LEDS, 0, 255 / NUM_LEDS);
+        for (int j = 0; j < NUM_LEDS; j++) {
+          leds[j].fadeToBlackBy(FADE_DURATION);
+        }
+        for (int j = 0; j < NUM_LEDS / 10; j++) {
+          leds[random(NUM_LEDS)] = CHSV(random(256), 255, MAX_BRIGHTNESS);
+        }
+        FastLED.show();
+        break;
+      default:
+        // Set a random color for each LED
+        leds[i] = CHSV(random(256), 255, 255);
+        leds[i].fadeToBlackBy(FADE_DURATION);
+        break;
+    }
+    FastLED.show();
+  }
+}
+
+void loop() {
+  // Check if button A has been pressed
+  updatedButtonAState = digitalRead(BUTTON_A);
+  if (updatedButtonAState != lastButtonAState && millis() - lastDebounceTimeA > DEBOUNCE_DELAY) {
+    if (updatedButtonAState == HIGH) {
+      // Button A has been pressed, set all LEDs to yellow
+      fill_solid(leds, NUM_LEDS, CRGB::Yellow);
+      FastLED.show();
+      // Record the current time as the last debounce time for button A
+      lastDebounceTimeA = millis();
+    }
+  }
+  // Update the last button state for button A
+  lastButtonAState = updatedButtonAState;
+
+  // Check if button B has been pressed
+  updatedButtonBState = digitalRead(BUTTON_B);
+  if (updatedButtonBState != lastButtonBState && millis() - lastDebounceTimeB > DEBOUNCE_DELAY) {
+    if (updatedButtonBState == HIGH) {
+      // Button B has been pressed, change the effect
+      currentEffect = (currentEffect + 1) % NUM_EFFECTS;
+      // Record the current time as the last debounce time for button B
+      lastDebounceTimeB = millis();
+    }
+    // Set all LEDs to black
+    fill_solid(leds, NUM_LEDS, CRGB::Black);
+    FastLED.show();
+  }
+  // Update the last button state for button B
+  lastButtonBState = updatedButtonBState;
+
+  // If neither button has been pressed, run the current effect
+  if (digitalRead(BUTTON_A) == LOW && digitalRead(BUTTON_B) == LOW) {
+    switch (currentEffect) {
+      case 0:
+        randomColorLoop();
+        break;
+      case 1:
+        sweepEffect();
+        break;
+      case 2:
+        rainbowTwinkleEffect();
+        break;
+    }
+  }
+}
+
