@@ -72,17 +72,17 @@ void loop() {
 			}
 		}
 		// Solid green color for 7 seconds
+		FastLED.clear();
 		for (int i = 0; i < 700; i++)
 		{
 			if (buttonAState == false)
 			{
-				FastLED.clear();
 				FastLED.showColor(CRGB::Green);
 				delay(10);
 			}
 			else
 			{
-				i == 700;
+				i = 700;
 			}
 		}
 	}
