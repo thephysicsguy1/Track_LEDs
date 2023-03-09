@@ -27,87 +27,131 @@ unsigned long buttonADelay = 30000; // 30 seconds delay
 
 // Interrupt service routine for Button A
 void buttonAInterrupt() {
-  unsigned long currentMillis = millis();
-  if (currentMillis - lastButtonATime >= buttonADelay) {
-    buttonAState = true;
-    lastButtonATime = currentMillis;
-  }
+	unsigned long currentMillis = millis();
+	if (currentMillis - lastButtonATime >= buttonADelay) {
+		buttonAState = true;
+		lastButtonATime = currentMillis;
+	}
 }
 
 void setup() {
-  pinMode(buttonAPin, INPUT_PULLUP);
-  pinMode(switchBPin, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(buttonAPin), buttonAInterrupt, FALLING);
-  FastLED.addLeds<WS2811, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS);
-  FastLED.setBrightness(MAX_BRIGHTNESS);
+	pinMode(buttonAPin, INPUT_PULLUP);
+	pinMode(switchBPin, INPUT_PULLUP);
+	attachInterrupt(digitalPinToInterrupt(buttonAPin), buttonAInterrupt, FALLING);
+	FastLED.addLeds<WS2811, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS);
+	FastLED.setBrightness(MAX_BRIGHTNESS);
 }
 
 void loop() {
-  if (buttonAState) {
-    // Button A has been pressed
-    buttonAState = false;
-    // Solid yellow color while waiting for switch B
-    FastLED.clear();
-    FastLED.showColor(CRGB::Yellow);
-    while (digitalRead(switchBPin) == HIGH) {
-      // Do nothing while waiting for switch B
-    }
-    // Wait for switch B to be released
-    while (digitalRead(switchBPin) == LOW) {
-      // Do nothing while switch B is pressed
-    }
-    // Chase effect
-    for (int i = 0; i < NUM_LEDS; i++) {
-      FastLED.clear();
-      leds[i] = CRGB::Green;
-      FastLED.show();
-      delay(25);
-    }
-    // Solid green color for 7 seconds
-    FastLED.clear();
-    FastLED.showColor(CRGB::Green);
-    delay(7000);
-  } else {
-    // Loop through the effects while waiting for button A
-    unsigned long currentMillis = millis();
-    if (currentMillis - previousMillis >= interval) {
-      previousMillis = currentMillis;
-      currentEffect++;
-      if (currentEffect > 2) {
-        currentEffect = 0;
-      }
-    }
-    switch (currentEffect) {
-      case 0:
-        // Random color sweep effect
-        for (int i = 0; i < NUM_LEDS; i++) {
-          leds[i] = CHSV(random(255), 255, 255);
-          FastLED.show();
-          delay(20);
-        }
-        break;
-      case 1:
-        // Rainbow twinkle effect
-        for (int i = 0; i < NUM_LEDS; i++) {
-          leds[i] = CRGB::Black;
-          if (random(10) < 8) {
-            leds[i] = CHSV(rainbowHue + random(64), 255, 255);
-          }
-        }
-        FastLED.show();
-        delay(20);
-        rainbowHue++;
-        break;
-      case 2:
-        // Rainbow fade effect
-        for (int i = 0; i < NUM_LEDS; i++) {
-          leds[i] = CHSV(rainbowHue, 255, 255);
-        }
-        FastLED.show();
-        delay(20);
-        rainbowHue++;
-        break;
-    }
-  }
-  FastLED.setBrightness(MAX_BRIGHTNESS * 0.75);
+	if (buttonAState) {
+		// Button A has been pressed
+		buttonAState = false;
+		// Solid yellow color while waiting for switch B
+		FastLED.clear();
+		FastLED.showColor(CRGB::Yellow);
+		while (digitalRead(switchBPin) == HIGH) {
+			// Do nothing while waiting for switch B
+		}
+		// Wait for switch B to be released
+		while (digitalRead(switchBPin) == LOW) {
+			// Do nothing while switch B is pressed
+		}
+		// Chase effect
+		//added break statements into this for loop to break out if 
+		for (int i = 0; i < NUM_LEDS; i++) {
+			if (buttonAState == false)
+			{
+				FastLED.clear();
+				leds[i] = CRGB::Green;
+				FastLED.show();
+				delay(25);
+			}
+			else
+			{
+				i = NUM_LEDS;
+			}
+		}
+		// Solid green color for 7 seconds
+		for (int i = 0; i < 700; i++)
+		{
+			if (buttonAState == false)
+			{
+				FastLED.clear();
+				FastLED.showColor(CRGB::Green);
+				delay(10);
+			}
+			else
+			{
+				i == 700;
+			}
+		}
+	}
+	else {
+		// Loop through the effects while waiting for button A
+		unsigned long currentMillis = millis();
+		if (currentMillis - previousMillis >= interval) {
+			previousMillis = currentMillis;
+			currentEffect++;
+			if (currentEffect > 2) {
+				currentEffect = 0;
+			}
+		}
+		if (buttonAState == false)
+		{
+			switch (currentEffect) {
+			case 0:
+				// Random color sweep effect
+				for (int i = 0; i < NUM_LEDS; i++) {
+					if (buttonAState == false)
+					{
+						leds[i] = CHSV(random(255), 255, 255);
+						FastLED.show();
+						delay(20);
+					}
+					else
+					{
+						break;
+					}
+				}
+				break;
+			case 1:
+				// Rainbow twinkle effect
+				for (int i = 0; i < NUM_LEDS; i++) {
+					if (buttonAState == false)
+					{
+						leds[i] = CRGB::Black;
+						if (random(10) < 8) {
+							leds[i] = CHSV(rainbowHue + random(64), 255, 255);
+						}
+					}
+					else
+					{
+						break;
+					}
+				}
+				FastLED.show();
+				delay(20);
+				rainbowHue++;
+				break;
+			case 2:
+				// Rainbow fade effect
+				for (int i = 0; i < NUM_LEDS; i++) {
+					if (buttonAState == false)
+					{
+						leds[i] = CHSV(rainbowHue, 255, 255);
+					}
+
+					else
+					{
+						break;
+					}
+				}
+		FastLED.show();
+		delay(20);
+		rainbowHue++;
+		break;
+			}
+		}
+	}
+	FastLED.setBrightness(MAX_BRIGHTNESS * 0.75);
 }
